@@ -1,0 +1,24 @@
+﻿Analyzing subscription_tracker...                               
+
+  error - The named parameter 'suffixText' isn't defined - lib\screens\add_subscription\add_subscription_screen.dart:239:15 - undefined_named_parameter
+  error - The method 'getCategoryColor' isn't defined for the type 'AppTheme' - lib\screens\add_subscription\add_subscription_screen.dart:267:40 - undefined_method
+   info - The import of 'package:flutter/services.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart' - lib\screens\dashboard\dashboard_screen.dart:2:8 - unnecessary_import
+  error - The method 'getNotificationsEnabled' isn't defined for the type 'StorageService' - lib\screens\settings\settings_screen.dart:31:49 - undefined_method
+  error - The method 'cancelAllNotifications' isn't defined for the type 'NotificationService' - lib\screens\settings\settings_screen.dart:54:35 - undefined_method
+   info - Don't use 'BuildContext's across async gaps - lib\screens\settings\settings_screen.dart:62:19 - use_build_context_synchronously
+  error - The method 'cancelAllNotifications' isn't defined for the type 'NotificationService' - lib\screens\settings\settings_screen.dart:243:35 - undefined_method
+  error - The named parameter 'uiLocalNotificationDateInterpretation' is required, but there's no corresponding argument - lib\services\notification_service.dart:54:26 - missing_required_argument
+  error - The name 'Color' isn't a class - lib\services\notification_service.dart:67:24 - creation_with_non_type
+  error - The name 'Color' isn't a class - lib\services\notification_service.dart:101:24 - creation_with_non_type
+
+C:\Users\User\.gemini\antigravity\scratch\flutter\bin\flutter.
+bat : 10 issues found. (ran in 18.3s)
+In Zeile:1 Zeichen:1
++ C:\Users\User\.gemini\antigravity\scratch\flutter\bin\flutte
+r.bat ana ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (10 issues found. 
+    (ran in 18.3s):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
