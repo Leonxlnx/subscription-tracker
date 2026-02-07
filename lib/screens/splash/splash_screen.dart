@@ -33,6 +33,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     
     final auth = AuthService();
     final needsAuth = await auth.hasPassword() || await auth.isBiometricEnabled();
+    if (!mounted) return;
     
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
@@ -67,20 +68,19 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Neumorphic logo
                 Container(
                   width: 72, height: 72,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [AppTheme.accent, AppTheme.accentMuted],
-                    ),
+                    color: AppTheme.surface,
                     borderRadius: BorderRadius.circular(22),
                     boxShadow: [
-                      BoxShadow(color: AppTheme.accent.withValues(alpha: 0.2), blurRadius: 24, spreadRadius: -4),
+                      ...AppTheme.softShadows,
+                      BoxShadow(color: AppTheme.accent.withValues(alpha: 0.12), blurRadius: 24, spreadRadius: -6),
                     ],
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.06), width: 0.5),
                   ),
-                  child: const Icon(Icons.receipt_long_rounded, size: 32, color: Color(0xFF0A0A0A)),
+                  child: Icon(Icons.receipt_long_rounded, size: 30, color: AppTheme.accent),
                 ),
                 const SizedBox(height: 20),
                 Text('SubTracker', style: TextStyle(

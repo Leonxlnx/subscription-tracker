@@ -6,7 +6,8 @@ import '../../services/storage_service.dart';
 import '../../core/data/service_icons.dart';
 
 class AnalyticsScreen extends StatefulWidget {
-  const AnalyticsScreen({super.key});
+  final VoidCallback? onRefresh;
+  const AnalyticsScreen({super.key, this.onRefresh});
 
   @override
   State<AnalyticsScreen> createState() => _AnalyticsScreenState();
@@ -61,40 +62,40 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> with SingleTickerProv
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Analytics', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700,
-                      color: AppTheme.textPrimary, letterSpacing: -0.8)),
+                  Text('Analytics', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary, letterSpacing: -0.6)),
                   const SizedBox(height: 4),
-                  Text('Your spending overview', style: TextStyle(fontSize: 13, color: AppTheme.textMuted)),
-                  const SizedBox(height: 28),
+                  Text('Your spending overview', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+                  const SizedBox(height: 24),
                   
-                  // Summary cards
+                  // Summary cards (neumorphic)
                   Row(
                     children: [
                       _summaryCard('Monthly', '€${_monthlyTotal.toStringAsFixed(2)}', AppTheme.accent),
-                      const SizedBox(width: 12),
-                      _summaryCard('Yearly', '€${_yearlyTotal.toStringAsFixed(0)}', AppTheme.accentMuted),
+                      const SizedBox(width: 10),
+                      _summaryCard('Yearly', '€${_yearlyTotal.toStringAsFixed(0)}', AppTheme.accentDim),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   Row(
                     children: [
                       _summaryCard('Active', '${_subscriptions.length}', AppTheme.success),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
                       _summaryCard('Avg/sub', '€${(_monthlyTotal / _subscriptions.length).toStringAsFixed(2)}', AppTheme.textSecondary),
                     ],
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 28),
                   
                   // Chart
                   Text('BY CATEGORY', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
-                      color: AppTheme.textMuted, letterSpacing: 1.5)),
+                      color: AppTheme.textMuted, letterSpacing: 1.2)),
                   const SizedBox(height: 16),
                   Center(
                     child: AnimatedBuilder(
                       animation: _chartAnim,
                       builder: (context, child) {
                         return SizedBox(
-                          width: 200, height: 200,
+                          width: 180, height: 180,
                           child: CustomPaint(
                             painter: _DonutPainter(
                               categories: _categorySpending,
@@ -106,7 +107,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> with SingleTickerProv
                       },
                     ),
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 24),
                   
                   // Category list
                   ..._categorySpending.entries.map((e) {
@@ -114,15 +115,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> with SingleTickerProv
                     final color = AppTheme.getCategoryColor(e.key);
                     return Container(
                       margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                      decoration: AppTheme.softCard(radius: 22),
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                      decoration: AppTheme.softCard(radius: 18),
                       child: Row(
                         children: [
                           Container(
                             width: 10, height: 10,
                             decoration: BoxDecoration(color: color, shape: BoxShape.circle),
                           ),
-                          const SizedBox(width: 14),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Text(e.key[0].toUpperCase() + e.key.substring(1),
                               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppTheme.textPrimary)),
@@ -141,31 +142,31 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> with SingleTickerProv
                     );
                   }),
                   
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 24),
                   
                   // Top spending
                   Text('TOP SPENDING', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
-                      color: AppTheme.textMuted, letterSpacing: 1.5)),
-                  const SizedBox(height: 12),
+                      color: AppTheme.textMuted, letterSpacing: 1.2)),
+                  const SizedBox(height: 10),
                   ...(_subscriptions..sort((a, b) => b.monthlyCost.compareTo(a.monthlyCost)))
                       .take(5).map((sub) {
                     final color = ServiceIcons.getService(sub.name)?.brandColor ?? AppTheme.getCategoryColor(sub.category);
                     return Container(
                       margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                      decoration: AppTheme.softCard(radius: 22),
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                      decoration: AppTheme.softCard(radius: 18),
                       child: Row(
                         children: [
                           Container(
                             width: 36, height: 36,
                             decoration: BoxDecoration(
                               color: color.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(11),
                             ),
                             child: Icon(ServiceIcons.getService(sub.name)?.icon ?? Icons.receipt_long_rounded,
                                 size: 16, color: color),
                           ),
-                          const SizedBox(width: 14),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Text(sub.name, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppTheme.textPrimary)),
                           ),
@@ -185,15 +186,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> with SingleTickerProv
   Widget _summaryCard(String label, String value, Color color) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: AppTheme.softCard(radius: 24),
+        padding: const EdgeInsets.all(18),
+        decoration: AppTheme.softCard(radius: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500,
                 color: AppTheme.textMuted, letterSpacing: 0.5)),
             const SizedBox(height: 8),
-            Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700,
+            Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700,
                 color: color, letterSpacing: -0.5)),
           ],
         ),
@@ -206,10 +207,18 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> with SingleTickerProv
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.insights_rounded, size: 48, color: AppTheme.textMuted),
+          Container(
+            width: 64, height: 64,
+            decoration: BoxDecoration(
+              color: AppTheme.surface,
+              shape: BoxShape.circle,
+              boxShadow: AppTheme.softShadows,
+            ),
+            child: Icon(Icons.insights_rounded, size: 28, color: AppTheme.textMuted),
+          ),
           const SizedBox(height: 20),
           Text('No data yet', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text('Add subscriptions to see analytics', style: TextStyle(fontSize: 13, color: AppTheme.textMuted)),
         ],
       ),
@@ -227,8 +236,8 @@ class _DonutPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 12;
-    const strokeWidth = 18.0;
+    final radius = size.width / 2 - 10;
+    const strokeWidth = 16.0;
     
     // Background ring
     final bgPaint = Paint()
@@ -265,7 +274,7 @@ class _DonutPainter extends CustomPainter {
     final textPainter = TextPainter(
       text: TextSpan(
         text: '€${total.toStringAsFixed(0)}',
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary, letterSpacing: -0.5),
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.textPrimary, letterSpacing: -0.5),
       ),
       textDirection: TextDirection.ltr,
     );

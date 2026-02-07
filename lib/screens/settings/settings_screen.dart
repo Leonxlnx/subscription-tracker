@@ -1,5 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../core/theme/app_theme.dart';
+import '../../models/subscription.dart';
 import '../../services/storage_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/auth_service.dart';
@@ -54,14 +57,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Settings', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700,
-                  color: AppTheme.textPrimary, letterSpacing: -0.8)),
+              Text('Settings', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary, letterSpacing: -0.6)),
               const SizedBox(height: 4),
-              Text('Personalize your experience', style: TextStyle(fontSize: 13, color: AppTheme.textMuted)),
-              const SizedBox(height: 32),
+              Text('Personalize your experience', style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
+              const SizedBox(height: 28),
               
               _sectionLabel('GENERAL'),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               _settingsCard([
                 _toggleRow(Icons.notifications_none_rounded, 'Notifications', _notificationsEnabled, (v) async {
                   await StorageService().setNotificationsEnabled(v);
@@ -71,21 +74,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _tapRow(Icons.language_rounded, 'Currency', _currency, () => _showCurrencyPicker()),
                 _divider(),
                 _tapRow(Icons.send_rounded, 'Test Notification', '', () async {
+                  final messenger = ScaffoldMessenger.of(context);
                   await NotificationService().showTestNotification();
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: const Text('Test notification sent'),
-                      backgroundColor: AppTheme.surfaceElevated,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ));
-                  }
+                  HapticFeedback.mediumImpact();
+                  messenger.showSnackBar(SnackBar(
+                    content: const Text('Test notification sent'),
+                    backgroundColor: AppTheme.surfaceHigh,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ));
                 }),
               ]),
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
               
               _sectionLabel('SECURITY'),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               _settingsCard([
                 _toggleRow(Icons.fingerprint_rounded, 'Biometric Lock', _biometricEnabled, (v) async {
                   await AuthService().setBiometricEnabled(v);
@@ -97,26 +100,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   setState(() => _autoLockEnabled = v);
                 }),
                 _divider(),
-                _tapRow(
-                  Icons.lock_outline_rounded,
-                  'Password',
+                _tapRow(Icons.lock_outline_rounded, 'Password',
                   _passwordEnabled ? 'Set' : 'Not set',
-                  () => _showPasswordDialog(),
-                ),
+                  () => _showPasswordDialog()),
               ]),
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
               
               _sectionLabel('DATA'),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               _settingsCard([
                 _tapRow(Icons.download_rounded, 'Export Data', '', () => _exportData()),
                 _divider(),
+                _tapRow(Icons.upload_rounded, 'Import Data', '', () => _importData()),
+                _divider(),
                 _tapRow(Icons.delete_outline_rounded, 'Clear All', '', () => _clearAllData(), danger: true),
               ]),
-              const SizedBox(height: 32),
+              const SizedBox(height: 28),
               
               Center(
-                child: Text('SubTracker v2.1', style: TextStyle(fontSize: 11, color: AppTheme.textSubtle)),
+                child: Text('SubTracker v2.2', style: TextStyle(fontSize: 11, color: AppTheme.textSubtle)),
               ),
             ],
           ),
@@ -127,29 +129,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _sectionLabel(String text) {
     return Text(text, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
-        color: AppTheme.textMuted, letterSpacing: 1.5));
+        color: AppTheme.textMuted, letterSpacing: 1.2));
   }
 
   Widget _settingsCard(List<Widget> children) {
     return Container(
-      decoration: AppTheme.softCard(radius: 24),
+      decoration: AppTheme.softCard(radius: 22),
       child: Column(children: children),
     );
   }
 
   Widget _divider() {
-    return Divider(height: 0.5, thickness: 0.5, color: AppTheme.border, indent: 56);
+    return Divider(height: 0.5, thickness: 0.5,
+      color: Colors.white.withValues(alpha: 0.04), indent: 54);
   }
 
   Widget _toggleRow(IconData icon, String label, bool value, ValueChanged<bool> onChanged) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: AppTheme.accentMuted),
+          Icon(icon, size: 20, color: AppTheme.accentDim),
           const SizedBox(width: 14),
           Expanded(child: Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppTheme.textPrimary))),
-          Switch(value: value, onChanged: onChanged, activeColor: AppTheme.accent),
+          Switch(value: value, onChanged: onChanged),
         ],
       ),
     );
@@ -158,12 +161,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _tapRow(IconData icon, String label, String subtitle, VoidCallback onTap, {bool danger = false}) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(22),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: danger ? AppTheme.danger : AppTheme.accentMuted),
+            Icon(icon, size: 20, color: danger ? AppTheme.danger : AppTheme.accentDim),
             const SizedBox(width: 14),
             Expanded(child: Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,
                 color: danger ? AppTheme.danger : AppTheme.textPrimary))),
@@ -181,8 +184,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final currencies = ['EUR', 'USD', 'GBP', 'CHF', 'JPY'];
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.surfaceElevated,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+      backgroundColor: AppTheme.surfaceHigh,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -190,17 +193,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 12),
             Container(width: 40, height: 4, decoration: BoxDecoration(
               color: AppTheme.surfaceBright, borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             ...currencies.map((c) => ListTile(
-              title: Text(c, style: TextStyle(color: AppTheme.textPrimary)),
+              title: Text(c, style: TextStyle(color: AppTheme.textPrimary, fontSize: 15)),
               trailing: _currency == c ? Icon(Icons.check_rounded, color: AppTheme.accent, size: 20) : null,
               onTap: () async {
+                final nav = Navigator.of(ctx);
                 await StorageService().setCurrency(c);
                 setState(() => _currency = c);
-                if (mounted) Navigator.pop(ctx);
+                nav.pop();
               },
             )),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
           ],
         ),
       ),
@@ -212,22 +216,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final result = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceElevated,
+        backgroundColor: AppTheme.surfaceHigh,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(_passwordEnabled ? 'Change Password' : 'Set Password',
             style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w600)),
-        content: TextField(
-          controller: controller,
-          obscureText: true,
-          style: TextStyle(color: AppTheme.textPrimary),
-          decoration: InputDecoration(hintText: 'Enter password'),
+        content: Container(
+          decoration: AppTheme.softInset(radius: 16),
+          child: TextField(
+            controller: controller,
+            obscureText: true,
+            style: TextStyle(color: AppTheme.textPrimary),
+            decoration: InputDecoration(
+              hintText: 'Enter password',
+              filled: false,
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            ),
+          ),
         ),
         actions: [
           if (_passwordEnabled)
             TextButton(
               onPressed: () async {
+                final nav = Navigator.of(ctx);
                 await AuthService().removePassword();
-                if (mounted) { setState(() => _passwordEnabled = false); Navigator.pop(ctx); }
+                setState(() => _passwordEnabled = false); nav.pop();
               },
               child: Text('Remove', style: TextStyle(color: AppTheme.danger)),
             ),
@@ -249,19 +264,125 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _exportData() async {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: const Text('Export not yet implemented'),
-      backgroundColor: AppTheme.surfaceElevated,
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-    ));
+    final subs = await StorageService().getSubscriptions();
+    if (subs.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Text('No data to export'),
+          backgroundColor: AppTheme.surfaceHigh,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        ));
+      }
+      return;
+    }
+    
+    final jsonData = jsonEncode(subs.map((s) => s.toJson()).toList());
+    await Clipboard.setData(ClipboardData(text: jsonData));
+    HapticFeedback.mediumImpact();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('Data copied to clipboard'),
+        backgroundColor: AppTheme.surfaceHigh,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ));
+    }
+  }
+
+  Future<void> _importData() async {
+    final controller = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surfaceHigh,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text('Import Data', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w600)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Paste exported JSON data below.',
+              style: TextStyle(fontSize: 13, color: AppTheme.textMuted)),
+            const SizedBox(height: 14),
+            Container(
+              height: 120,
+              decoration: AppTheme.softInset(radius: 16),
+              child: TextField(
+                controller: controller,
+                style: TextStyle(color: AppTheme.textPrimary, fontSize: 12),
+                maxLines: null,
+                expands: true,
+                decoration: InputDecoration(
+                  hintText: 'Paste JSON here...',
+                  filled: false,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  contentPadding: const EdgeInsets.all(14),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              final clipData = await Clipboard.getData(Clipboard.kTextPlain);
+              if (clipData?.text != null) controller.text = clipData!.text!;
+            },
+            child: Text('Paste from Clipboard', style: TextStyle(color: AppTheme.accentDim, fontSize: 12)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel', style: TextStyle(color: AppTheme.textMuted)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, controller.text),
+            child: Text('Import', style: TextStyle(color: AppTheme.accent, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null && result.isNotEmpty) {
+      try {
+        final List<dynamic> jsonList = jsonDecode(result);
+        final storage = StorageService();
+        int count = 0;
+        for (final item in jsonList) {
+          final sub = Subscription.fromJson(item as Map<String, dynamic>);
+          await storage.addSubscription(sub);
+          count++;
+        }
+        HapticFeedback.mediumImpact();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Imported $count subscription${count == 1 ? '' : 's'}'),
+            backgroundColor: AppTheme.surfaceHigh,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          ));
+        }
+      } catch (e) {
+        HapticFeedback.heavyImpact();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: const Text('Invalid data format'),
+            backgroundColor: AppTheme.danger.withValues(alpha: 0.9),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          ));
+        }
+      }
+    }
   }
 
   Future<void> _clearAllData() async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceElevated,
+        backgroundColor: AppTheme.surfaceHigh,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text('Clear All Data?', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w600)),
         content: Text('This will delete all subscriptions. Cannot be undone.',
@@ -280,12 +401,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
     if (confirm == true) {
       await StorageService().clearAllData();
+      HapticFeedback.heavyImpact();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: const Text('All data cleared'),
-          backgroundColor: AppTheme.surfaceElevated,
+          backgroundColor: AppTheme.surfaceHigh,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ));
       }
     }

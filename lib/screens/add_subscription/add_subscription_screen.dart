@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/theme/app_theme.dart';
@@ -64,12 +65,13 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen>
     final name = _nameController.text.trim();
     final price = double.tryParse(_priceController.text.replaceAll(',', '.'));
     if (name.isEmpty || price == null || price <= 0) {
+      HapticFeedback.heavyImpact();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please enter a name and valid price'),
-          backgroundColor: AppTheme.surfaceElevated,
+          backgroundColor: AppTheme.surfaceHigh,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
       );
       return;
@@ -99,6 +101,7 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen>
       try { await NotificationService().scheduleSubscriptionReminder(subscription); } catch (_) {}
     }
 
+    HapticFeedback.mediumImpact();
     if (mounted) Navigator.of(context).pop(true);
   }
 
@@ -108,7 +111,7 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen>
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceElevated,
+        backgroundColor: AppTheme.surfaceHigh,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text('Delete ${widget.subscription!.name}?',
             style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w600)),
@@ -146,13 +149,16 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen>
                 padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
                 child: Row(
                   children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: Icon(Icons.arrow_back_rounded, color: AppTheme.textSecondary, size: 22),
-                      style: IconButton.styleFrom(
-                        backgroundColor: AppTheme.surfaceElevated,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                        fixedSize: const Size(44, 44),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        width: 44, height: 44,
+                        decoration: BoxDecoration(
+                          color: AppTheme.surface,
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: AppTheme.softShadowsLight,
+                        ),
+                        child: Icon(Icons.arrow_back_rounded, color: AppTheme.textSecondary, size: 20),
                       ),
                     ),
                     const Spacer(),
@@ -160,13 +166,16 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen>
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
                     const Spacer(),
                     if (_isEditing)
-                      IconButton(
-                        onPressed: _delete,
-                        icon: Icon(Icons.delete_outline_rounded, color: AppTheme.danger, size: 22),
-                        style: IconButton.styleFrom(
-                          backgroundColor: AppTheme.danger.withValues(alpha: 0.08),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          fixedSize: const Size(44, 44),
+                      GestureDetector(
+                        onTap: _delete,
+                        child: Container(
+                          width: 44, height: 44,
+                          decoration: BoxDecoration(
+                            color: AppTheme.danger.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: AppTheme.softShadowsLight,
+                          ),
+                          child: Icon(Icons.delete_outline_rounded, color: AppTheme.danger, size: 20),
                         ),
                       )
                     else
@@ -184,55 +193,74 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Name
-                      _fieldLabel('Name'),
+                      _fieldLabel('NAME'),
                       const SizedBox(height: 8),
-                      TextField(
-                        controller: _nameController,
-                        style: TextStyle(color: AppTheme.textPrimary, fontSize: 15),
-                        decoration: InputDecoration(hintText: 'Netflix, Spotify, iCloud...'),
-                        textCapitalization: TextCapitalization.words,
+                      Container(
+                        decoration: AppTheme.softInset(radius: 18),
+                        child: TextField(
+                          controller: _nameController,
+                          style: TextStyle(color: AppTheme.textPrimary, fontSize: 15),
+                          decoration: InputDecoration(
+                            hintText: 'Netflix, Spotify, iCloud...',
+                            filled: false,
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                          ),
+                          textCapitalization: TextCapitalization.words,
+                        ),
                       ),
                       const SizedBox(height: 24),
                       
                       // Price + Cycle row
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
                             flex: 3,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _fieldLabel('Price'),
+                                _fieldLabel('PRICE'),
                                 const SizedBox(height: 8),
-                                TextField(
-                                  controller: _priceController,
-                                  style: TextStyle(color: AppTheme.textPrimary, fontSize: 15),
-                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                  decoration: InputDecoration(
-                                    hintText: '0.00',
-                                    prefixText: '€ ',
-                                    prefixStyle: TextStyle(color: AppTheme.accent, fontWeight: FontWeight.w600, fontSize: 15),
+                                Container(
+                                  decoration: AppTheme.softInset(radius: 18),
+                                  child: TextField(
+                                    controller: _priceController,
+                                    style: TextStyle(color: AppTheme.textPrimary, fontSize: 15),
+                                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                    decoration: InputDecoration(
+                                      hintText: '0.00',
+                                      prefixText: '€ ',
+                                      prefixStyle: TextStyle(color: AppTheme.accent, fontWeight: FontWeight.w600, fontSize: 15),
+                                      filled: false,
+                                      border: InputBorder.none,
+                                      enabledBorder: InputBorder.none,
+                                      focusedBorder: InputBorder.none,
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          const SizedBox(width: 14),
                           Expanded(
                             flex: 4,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _fieldLabel('Billing'),
+                                _fieldLabel('BILLING'),
                                 const SizedBox(height: 8),
                                 Container(
                                   height: 54,
-                                  decoration: AppTheme.softInset(radius: 20),
+                                  decoration: AppTheme.softInset(radius: 18),
                                   child: Row(
                                     children: [
-                                      _cycleChip('monthly', 'Monthly'),
-                                      _cycleChip('yearly', 'Yearly'),
-                                      _cycleChip('weekly', 'Weekly'),
+                                      _cycleChip('monthly', 'Mo'),
+                                      _cycleChip('yearly', 'Yr'),
+                                      _cycleChip('weekly', 'Wk'),
                                     ],
                                   ),
                                 ),
@@ -244,7 +272,7 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen>
                       const SizedBox(height: 24),
                       
                       // Category
-                      _fieldLabel('Category'),
+                      _fieldLabel('CATEGORY'),
                       const SizedBox(height: 10),
                       Wrap(
                         spacing: 8,
@@ -254,7 +282,7 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen>
                       const SizedBox(height: 24),
                       
                       // Next billing date
-                      _fieldLabel('Next billing'),
+                      _fieldLabel('NEXT BILLING'),
                       const SizedBox(height: 8),
                       GestureDetector(
                         onTap: () async {
@@ -267,7 +295,7 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen>
                               data: AppTheme.darkTheme.copyWith(
                                 colorScheme: const ColorScheme.dark(
                                   primary: AppTheme.accent,
-                                  surface: AppTheme.surfaceElevated,
+                                  surface: AppTheme.surfaceHigh,
                                 ),
                               ),
                               child: child!,
@@ -276,8 +304,8 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen>
                           if (date != null) setState(() => _nextBilling = date);
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                          decoration: AppTheme.softInset(radius: 20),
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                          decoration: AppTheme.softInset(radius: 18),
                           child: Row(
                             children: [
                               Icon(Icons.calendar_today_rounded, size: 18, color: AppTheme.accent),
@@ -294,32 +322,32 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen>
                       
                       // Notification toggle
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                        decoration: AppTheme.softCard(radius: 24),
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                        decoration: AppTheme.softCard(radius: 20),
                         child: Row(
                           children: [
                             Icon(Icons.notifications_none_rounded, size: 20, color: AppTheme.accent),
-                            const SizedBox(width: 14),
+                            const SizedBox(width: 12),
                             Expanded(
-                              child: Text('Reminder', style: TextStyle(fontSize: 15, color: AppTheme.textPrimary, fontWeight: FontWeight.w500)),
+                              child: Text('Reminder', style: TextStyle(fontSize: 14, color: AppTheme.textPrimary, fontWeight: FontWeight.w500)),
                             ),
                             if (_notificationsEnabled)
                               Container(
-                                margin: const EdgeInsets.only(right: 12),
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                margin: const EdgeInsets.only(right: 10),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                 decoration: BoxDecoration(
                                   color: AppTheme.accent.withValues(alpha: 0.08),
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: DropdownButtonHideUnderline(
                                   child: DropdownButton<int>(
                                     value: _reminderDaysBefore,
                                     isDense: true,
-                                    dropdownColor: AppTheme.surfaceElevated,
+                                    dropdownColor: AppTheme.surfaceHigh,
                                     style: TextStyle(fontSize: 12, color: AppTheme.accent, fontWeight: FontWeight.w500),
                                     icon: Icon(Icons.unfold_more_rounded, size: 14, color: AppTheme.accent),
                                     items: [1, 2, 3, 5, 7].map((d) =>
-                                      DropdownMenuItem(value: d, child: Text('${d}d before'))).toList(),
+                                      DropdownMenuItem(value: d, child: Text('${d}d'))).toList(),
                                     onChanged: (v) => setState(() => _reminderDaysBefore = v ?? 3),
                                   ),
                                 ),
@@ -327,7 +355,6 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen>
                             Switch(
                               value: _notificationsEnabled,
                               onChanged: (v) => setState(() => _notificationsEnabled = v),
-                              activeColor: AppTheme.accent,
                             ),
                           ],
                         ),
@@ -335,30 +362,37 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen>
                       const SizedBox(height: 24),
                       
                       // Notes
-                      _fieldLabel('Notes'),
+                      _fieldLabel('NOTES'),
                       const SizedBox(height: 8),
-                      TextField(
-                        controller: _notesController,
-                        style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
-                        maxLines: 3,
-                        decoration: InputDecoration(hintText: 'Optional notes...'),
-                      ),
-                      const SizedBox(height: 36),
-                      
-                      // Save button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: _save,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.accent,
-                            foregroundColor: const Color(0xFF0A0A0A),
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                            textStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, letterSpacing: 0.3),
+                      Container(
+                        decoration: AppTheme.softInset(radius: 18),
+                        child: TextField(
+                          controller: _notesController,
+                          style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+                          maxLines: 3,
+                          decoration: InputDecoration(
+                            hintText: 'Optional notes...',
+                            filled: false,
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
                           ),
-                          child: Text(_isEditing ? 'Update' : 'Add Subscription'),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      
+                      // Save button (neumorphic)
+                      GestureDetector(
+                        onTap: _save,
+                        child: Container(
+                          width: double.infinity,
+                          height: 56,
+                          decoration: AppTheme.softButton(radius: 18),
+                          alignment: Alignment.center,
+                          child: Text(_isEditing ? 'Update' : 'Add Subscription',
+                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700,
+                              color: AppTheme.background, letterSpacing: 0.3)),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -374,26 +408,29 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen>
   }
 
   Widget _fieldLabel(String text) {
-    return Text(text, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
-        color: AppTheme.textMuted, letterSpacing: 0.8));
+    return Text(text, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
+        color: AppTheme.textMuted, letterSpacing: 1.2));
   }
 
   Widget _cycleChip(String value, String label) {
     final active = _billingCycle == value;
     return Expanded(
       child: GestureDetector(
-        onTap: () => setState(() => _billingCycle = value),
+        onTap: () {
+          HapticFeedback.selectionClick();
+          setState(() => _billingCycle = value);
+        },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           margin: const EdgeInsets.all(4),
           decoration: BoxDecoration(
             color: active ? AppTheme.accent.withValues(alpha: 0.12) : Colors.transparent,
-            borderRadius: BorderRadius.circular(14),
-            border: active ? Border.all(color: AppTheme.accent.withValues(alpha: 0.2)) : null,
+            borderRadius: BorderRadius.circular(12),
+            border: active ? Border.all(color: AppTheme.accent.withValues(alpha: 0.25)) : null,
           ),
           alignment: Alignment.center,
           child: Text(label, style: TextStyle(
-            fontSize: 11, fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+            fontSize: 12, fontWeight: active ? FontWeight.w600 : FontWeight.w400,
             color: active ? AppTheme.accent : AppTheme.textMuted,
           )),
         ),
@@ -406,17 +443,21 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen>
     final color = AppTheme.getCategoryColor(cat);
     final label = cat[0].toUpperCase() + cat.substring(1);
     return GestureDetector(
-      onTap: () => setState(() => _category = cat),
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() => _category = cat);
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         decoration: BoxDecoration(
-          color: active ? color.withValues(alpha: 0.12) : AppTheme.surfaceElevated,
-          borderRadius: BorderRadius.circular(16),
+          color: active ? color.withValues(alpha: 0.12) : AppTheme.surface,
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: active ? color.withValues(alpha: 0.3) : AppTheme.border,
+            color: active ? color.withValues(alpha: 0.3) : Colors.white.withValues(alpha: 0.04),
             width: active ? 1 : 0.5,
           ),
+          boxShadow: active ? null : AppTheme.softShadowsLight,
         ),
         child: Text(label, style: TextStyle(
           fontSize: 12, fontWeight: active ? FontWeight.w600 : FontWeight.w400,

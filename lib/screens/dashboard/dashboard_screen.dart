@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/data/service_icons.dart';
 import '../../models/subscription.dart';
@@ -25,9 +26,7 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
     super.initState();
     _pageController = PageController();
     _fabController = AnimationController(
-      duration: const Duration(milliseconds: 500),
-      vsync: this,
-    );
+      duration: const Duration(milliseconds: 500), vsync: this);
     _fabController.forward();
     _loadSubscriptions();
   }
@@ -45,10 +44,11 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
   }
 
   void _switchTab(int index) {
+    HapticFeedback.selectionClick();
     setState(() => _currentTab = index);
     _pageController.animateToPage(index,
-        duration: const Duration(milliseconds: 350),
-        curve: Curves.easeOutCubic);
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic);
   }
 
   Future<void> _openAddSubscription([Subscription? existing]) async {
@@ -60,10 +60,8 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
           return FadeTransition(
             opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
             child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 0.08),
-                end: Offset.zero,
-              ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+              position: Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero)
+                  .animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
               child: child,
             ),
           );
@@ -85,35 +83,26 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
         physics: const NeverScrollableScrollPhysics(),
         children: [
           _buildHomeTab(),
-          const AnalyticsScreen(),
+          AnalyticsScreen(onRefresh: _loadSubscriptions),
           const SettingsScreen(),
         ],
       ),
       floatingActionButton: _currentTab == 0
-          ? ScaleTransition(
-              scale: CurvedAnimation(parent: _fabController, curve: Curves.easeOutBack),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(22),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.accent.withValues(alpha: 0.25),
-                      blurRadius: 20,
-                      spreadRadius: -4,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: FloatingActionButton(
-                  onPressed: () => _openAddSubscription(),
-                  backgroundColor: AppTheme.accent,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-                  child: const Icon(Icons.add_rounded, color: Color(0xFF0A0A0A), size: 26),
-                ),
+        ? ScaleTransition(
+            scale: CurvedAnimation(parent: _fabController, curve: Curves.easeOutBack),
+            child: Container(
+              decoration: AppTheme.softButton(radius: 20),
+              child: FloatingActionButton(
+                onPressed: () => _openAddSubscription(),
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                highlightElevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                child: const Icon(Icons.add_rounded, color: Color(0xFF0D0D0D), size: 26),
               ),
-            )
-          : null,
+            ),
+          )
+        : null,
       bottomNavigationBar: _buildBottomNav(),
     );
   }
@@ -122,17 +111,17 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.surface,
-        border: Border(top: BorderSide(color: AppTheme.border, width: 0.5)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, -2))],
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _navItem(0, Icons.grid_view_rounded, 'Home'),
-              _navItem(1, Icons.insights_rounded, 'Analytics'),
-              _navItem(2, Icons.tune_rounded, 'Settings'),
+              _navItem(0, Icons.home_rounded, 'Home'),
+              _navItem(1, Icons.pie_chart_rounded, 'Analytics'),
+              _navItem(2, Icons.settings_rounded, 'Settings'),
             ],
           ),
         ),
@@ -148,20 +137,19 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeOut,
-        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
           color: active ? AppTheme.accent.withValues(alpha: 0.08) : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 22, color: active ? AppTheme.accent : AppTheme.textMuted),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
             Text(label, style: TextStyle(
               fontSize: 10, fontWeight: active ? FontWeight.w600 : FontWeight.w400,
               color: active ? AppTheme.accent : AppTheme.textMuted,
-              letterSpacing: 0.3,
             )),
           ],
         ),
@@ -174,7 +162,7 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
       child: RefreshIndicator(
         onRefresh: _loadSubscriptions,
         color: AppTheme.accent,
-        backgroundColor: AppTheme.surfaceElevated,
+        backgroundColor: AppTheme.surface,
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           slivers: [
@@ -184,7 +172,7 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header row
+                    // Header
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -193,64 +181,72 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text('SubTracker',
-                                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700,
-                                    color: AppTheme.textPrimary, letterSpacing: -0.8)),
+                                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700,
+                                  color: AppTheme.textPrimary, letterSpacing: -0.6)),
                               const SizedBox(height: 2),
-                              Text('${_subscriptions.length} active',
-                                style: TextStyle(fontSize: 13, color: AppTheme.textMuted, letterSpacing: 0.2)),
+                              Text('${_subscriptions.length} active subscription${_subscriptions.length == 1 ? '' : 's'}',
+                                style: TextStyle(fontSize: 12, color: AppTheme.textMuted)),
                             ],
                           ),
                         ),
                         Container(
                           width: 42, height: 42,
                           decoration: BoxDecoration(
-                            color: AppTheme.surfaceElevated,
+                            color: AppTheme.surface,
                             borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: AppTheme.border, width: 0.5),
+                            boxShadow: AppTheme.softShadowsLight,
                           ),
                           child: Icon(Icons.notifications_none_rounded, size: 20, color: AppTheme.textSecondary),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 24),
                     
-                    // Spending card
+                    // Spending card (neumorphic)
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(28),
-                      decoration: AppTheme.accentGlow(radius: 28),
+                      padding: const EdgeInsets.all(24),
+                      decoration: AppTheme.accentGlow(radius: 24),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('MONTHLY', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
-                              color: AppTheme.accent.withValues(alpha: 0.7), letterSpacing: 1.5)),
-                          const SizedBox(height: 10),
-                          Text('€${_monthlyTotal.toStringAsFixed(2)}',
-                            style: TextStyle(fontSize: 42, fontWeight: FontWeight.w800,
-                                color: AppTheme.textPrimary, letterSpacing: -2, height: 1.0)),
-                          const SizedBox(height: 6),
                           Row(
                             children: [
                               Container(
-                                width: 4, height: 4,
-                                decoration: BoxDecoration(color: AppTheme.accent, shape: BoxShape.circle),
+                                width: 36, height: 36,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.accent.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(11),
+                                ),
+                                child: Icon(Icons.trending_up_rounded, size: 18, color: AppTheme.accent),
                               ),
-                              const SizedBox(width: 8),
-                              Text('€${(_monthlyTotal * 12).toStringAsFixed(0)} per year',
-                                style: TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+                              const SizedBox(width: 12),
+                              Text('MONTHLY SPEND', style: TextStyle(fontSize: 11,
+                                fontWeight: FontWeight.w600, color: AppTheme.textMuted, letterSpacing: 1.2)),
                             ],
+                          ),
+                          const SizedBox(height: 16),
+                          Text('€${_monthlyTotal.toStringAsFixed(2)}',
+                            style: TextStyle(fontSize: 36, fontWeight: FontWeight.w800,
+                              color: AppTheme.textPrimary, letterSpacing: -1.5, height: 1.0)),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: AppTheme.surfaceLight.withValues(alpha: 0.5),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text('€${(_monthlyTotal * 12).toStringAsFixed(0)} / year',
+                              style: TextStyle(fontSize: 12, color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 28),
                     
                     if (_subscriptions.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: Text('ACTIVE', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
-                            color: AppTheme.textMuted, letterSpacing: 1.5)),
-                      ),
+                      Text('SUBSCRIPTIONS', style: TextStyle(fontSize: 11,
+                        fontWeight: FontWeight.w600, color: AppTheme.textMuted, letterSpacing: 1.2)),
                   ],
                 ),
               ),
@@ -260,7 +256,7 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
               SliverFillRemaining(child: _buildEmptyState())
             else
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(24, 8, 24, 100),
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 100),
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) => _buildSubscriptionCard(_subscriptions[index]),
@@ -280,18 +276,20 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 72, height: 72,
+            width: 80, height: 80,
             decoration: BoxDecoration(
-              color: AppTheme.surfaceElevated,
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: AppTheme.border),
+              color: AppTheme.surface,
+              shape: BoxShape.circle,
+              boxShadow: AppTheme.softShadows,
             ),
-            child: Icon(Icons.receipt_long_rounded, size: 28, color: AppTheme.textMuted),
+            child: Icon(Icons.receipt_long_rounded, size: 30, color: AppTheme.textMuted),
           ),
           const SizedBox(height: 24),
-          Text('No subscriptions yet', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
-          const SizedBox(height: 8),
-          Text('Tap + to add one', style: TextStyle(fontSize: 13, color: AppTheme.textMuted)),
+          Text('No subscriptions yet',
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+          const SizedBox(height: 6),
+          Text('Tap + to add your first one',
+            style: TextStyle(fontSize: 13, color: AppTheme.textMuted)),
         ],
       ),
     );
@@ -314,24 +312,25 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
     return GestureDetector(
       onTap: () => _openAddSubscription(sub),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-        decoration: AppTheme.softCard(radius: 24),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        decoration: AppTheme.softCard(radius: 20),
         child: Row(
           children: [
+            // Icon
             Container(
               width: 44, height: 44,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: color.withValues(alpha: 0.08)),
+                borderRadius: BorderRadius.circular(13),
               ),
               child: Icon(
                 service?.icon ?? Icons.receipt_long_rounded,
                 size: 20, color: color,
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 14),
+            // Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -344,13 +343,23 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
                 ],
               ),
             ),
+            // Price
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text('€${sub.price.toStringAsFixed(2)}',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppTheme.textPrimary, letterSpacing: -0.3)),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700,
+                    color: AppTheme.textPrimary, letterSpacing: -0.3)),
                 const SizedBox(height: 2),
-                Text(sub.billingCycle, style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceLight,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(sub.billingCycle, style: TextStyle(
+                    fontSize: 10, color: AppTheme.textMuted, fontWeight: FontWeight.w500)),
+                ),
               ],
             ),
           ],
