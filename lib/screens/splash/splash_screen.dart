@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../services/auth_service.dart';
+import '../../services/notification_service.dart';
+import '../../services/storage_service.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../auth/lock_screen.dart';
 
@@ -11,26 +13,29 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
   late AnimationController _fadeController;
-  late AnimationController _scaleController;
 
   @override
   void initState() {
     super.initState();
-    _fadeController = AnimationController(duration: const Duration(milliseconds: 600), vsync: this);
-    _scaleController = AnimationController(duration: const Duration(milliseconds: 800), vsync: this);
-    
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 400), vsync: this);
     _fadeController.forward();
-    _scaleController.forward();
-    
     _navigate();
   }
 
   Future<void> _navigate() async {
-    await Future.delayed(const Duration(milliseconds: 1400));
+    await Future.delayed(const Duration(milliseconds: 700));
     if (!mounted) return;
     
+    // Reschedule all notifications on app start
+    try {
+      final subs = await StorageService().getSubscriptions();
+      await NotificationService().rescheduleAllReminders(subs);
+    } catch (_) {}
+    
+    if (!mounted) return;
     final auth = AuthService();
     final needsAuth = await auth.hasPassword() || await auth.isBiometricEnabled();
     if (!mounted) return;
@@ -42,7 +47,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
-        transitionDuration: const Duration(milliseconds: 400),
+        transitionDuration: const Duration(milliseconds: 300),
       ),
     );
   }
@@ -50,7 +55,6 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   @override
   void dispose() {
     _fadeController.dispose();
-    _scaleController.dispose();
     super.dispose();
   }
 
@@ -61,35 +65,24 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       body: Center(
         child: FadeTransition(
           opacity: CurvedAnimation(parent: _fadeController, curve: Curves.easeOut),
-          child: ScaleTransition(
-            scale: Tween<double>(begin: 0.85, end: 1.0).animate(
-              CurvedAnimation(parent: _scaleController, curve: Curves.easeOutCubic),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Neumorphic logo
-                Container(
-                  width: 72, height: 72,
-                  decoration: BoxDecoration(
-                    color: AppTheme.surface,
-                    borderRadius: BorderRadius.circular(22),
-                    boxShadow: [
-                      ...AppTheme.softShadows,
-                      BoxShadow(color: AppTheme.accent.withValues(alpha: 0.12), blurRadius: 24, spreadRadius: -6),
-                    ],
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.06), width: 0.5),
-                  ),
-                  child: Icon(Icons.receipt_long_rounded, size: 30, color: AppTheme.accent),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Logo
+              Container(
+                width: 64, height: 64,
+                decoration: BoxDecoration(
+                  color: AppTheme.surface,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: AppTheme.softShadows,
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.05), width: 0.5),
                 ),
-                const SizedBox(height: 20),
-                Text('SubTracker', style: TextStyle(
-                  fontSize: 22, fontWeight: FontWeight.w700, color: AppTheme.textPrimary, letterSpacing: -0.6)),
-                const SizedBox(height: 6),
-                Text('Track every penny', style: TextStyle(
-                  fontSize: 13, color: AppTheme.textMuted, letterSpacing: 0.2)),
-              ],
-            ),
+                child: const Icon(Icons.receipt_long_rounded, size: 28, color: AppTheme.accent),
+              ),
+              const SizedBox(height: 18),
+              const Text('SubTracker', style: TextStyle(
+                fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.textPrimary, letterSpacing: -0.5)),
+            ],
           ),
         ),
       ),

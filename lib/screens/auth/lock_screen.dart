@@ -12,12 +12,12 @@ class LockScreen extends StatefulWidget {
 }
 
 class _LockScreenState extends State<LockScreen> with TickerProviderStateMixin {
-  final _passwordController = TextEditingController();
+  String _pin = '';
   String _error = '';
-  bool _loading = false;
-  bool _obscure = true;
   late AnimationController _shakeController;
   late AnimationController _entranceController;
+
+  static const int _pinLength = 6;
 
   @override
   void initState() {
@@ -25,7 +25,7 @@ class _LockScreenState extends State<LockScreen> with TickerProviderStateMixin {
     _shakeController = AnimationController(
       duration: const Duration(milliseconds: 500), vsync: this);
     _entranceController = AnimationController(
-      duration: const Duration(milliseconds: 700), vsync: this);
+      duration: const Duration(milliseconds: 600), vsync: this);
     _entranceController.forward();
     _tryBiometric();
   }
@@ -33,20 +33,38 @@ class _LockScreenState extends State<LockScreen> with TickerProviderStateMixin {
   Future<void> _tryBiometric() async {
     final auth = AuthService();
     if (await auth.isBiometricEnabled()) {
-      setState(() => _loading = true);
+
       final ok = await auth.authenticateWithBiometric();
       if (ok && mounted) _unlock();
-      if (mounted) setState(() => _loading = false);
+
     }
   }
 
-  Future<void> _submitPassword() async {
-    final pw = _passwordController.text;
-    if (pw.isEmpty) return;
-    
-    setState(() => _loading = true);
-    final ok = await AuthService().verifyPassword(pw);
-    setState(() => _loading = false);
+  void _addDigit(String digit) {
+    if (_pin.length >= _pinLength) return;
+    HapticFeedback.lightImpact();
+    setState(() {
+      _pin += digit;
+      _error = '';
+    });
+    if (_pin.length == _pinLength) {
+      _submitPin();
+    }
+  }
+
+  void _removeDigit() {
+    if (_pin.isEmpty) return;
+    HapticFeedback.selectionClick();
+    setState(() {
+      _pin = _pin.substring(0, _pin.length - 1);
+      _error = '';
+    });
+  }
+
+  Future<void> _submitPin() async {
+
+    final ok = await AuthService().verifyPassword(_pin);
+
     
     if (ok) {
       HapticFeedback.mediumImpact();
@@ -55,8 +73,8 @@ class _LockScreenState extends State<LockScreen> with TickerProviderStateMixin {
       HapticFeedback.heavyImpact();
       _shakeController.forward(from: 0);
       setState(() {
-        _error = 'Incorrect password';
-        _passwordController.clear();
+        _error = 'Wrong PIN';
+        _pin = '';
       });
     }
   }
@@ -71,14 +89,13 @@ class _LockScreenState extends State<LockScreen> with TickerProviderStateMixin {
             child: child,
           );
         },
-        transitionDuration: const Duration(milliseconds: 400),
+        transitionDuration: const Duration(milliseconds: 350),
       ),
     );
   }
 
   @override
   void dispose() {
-    _passwordController.dispose();
     _shakeController.dispose();
     _entranceController.dispose();
     super.dispose();
@@ -89,154 +106,147 @@ class _LockScreenState extends State<LockScreen> with TickerProviderStateMixin {
     return Scaffold(
       backgroundColor: AppTheme.background,
       body: SafeArea(
-        child: Center(
-          child: FadeTransition(
-            opacity: CurvedAnimation(parent: _entranceController, curve: Curves.easeOut),
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 0.05), end: Offset.zero,
-              ).animate(CurvedAnimation(parent: _entranceController, curve: Curves.easeOutCubic)),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // — Icon in neumorphic circle —
-                    Container(
-                      width: 80, height: 80,
-                      decoration: BoxDecoration(
-                        color: AppTheme.surface,
-                        shape: BoxShape.circle,
-                        boxShadow: AppTheme.softShadows,
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
-                      ),
-                      child: Icon(Icons.lock_outline_rounded, size: 30, color: AppTheme.accent),
-                    ),
-                    const SizedBox(height: 32),
-                    
-                    // — Title —
-                    Text('Welcome back',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700,
-                        color: AppTheme.textPrimary, letterSpacing: -0.5)),
-                    const SizedBox(height: 6),
-                    Text('Enter your password to continue',
-                      style: TextStyle(fontSize: 13, color: AppTheme.textMuted)),
-                    const SizedBox(height: 36),
-                    
-                    // — Password field in neumorphic card —
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: AppTheme.softCard(radius: 28),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('PASSWORD', style: TextStyle(fontSize: 11,
-                            fontWeight: FontWeight.w600, color: AppTheme.textMuted, letterSpacing: 1.2)),
-                          const SizedBox(height: 12),
-                          
-                          AnimatedBuilder(
-                            animation: _shakeController,
-                            builder: (context, child) {
-                              final t = _shakeController.value;
-                              final dx = t < 0.25 ? 12.0 * (t * 4)
-                                  : t < 0.75 ? 12.0 * (1 - (t - 0.25) * 4)
-                                  : 12.0 * ((t - 0.75) * 4 - 1);
-                              return Transform.translate(offset: Offset(dx, 0), child: child);
-                            },
-                            child: Container(
-                              decoration: AppTheme.softInset(radius: 16),
-                              child: TextField(
-                                controller: _passwordController,
-                                obscureText: _obscure,
-                                style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, letterSpacing: 2),
-                                decoration: InputDecoration(
-                                  hintText: 'Enter password',
-                                  hintStyle: TextStyle(color: AppTheme.textSubtle, letterSpacing: 0),
-                                  filled: false,
-                                  border: InputBorder.none,
-                                  enabledBorder: InputBorder.none,
-                                  focusedBorder: InputBorder.none,
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _obscure ? Icons.visibility_off_rounded : Icons.visibility_rounded,
-                                      size: 20, color: AppTheme.textMuted,
-                                    ),
-                                    onPressed: () => setState(() => _obscure = !_obscure),
-                                  ),
-                                ),
-                                onSubmitted: (_) => _submitPassword(),
-                              ),
-                            ),
-                          ),
-                          
-                          // Error
-                          AnimatedSize(
-                            duration: const Duration(milliseconds: 200),
-                            child: _error.isNotEmpty
-                              ? Padding(
-                                  padding: const EdgeInsets.only(top: 12),
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.error_outline_rounded, size: 14, color: AppTheme.danger),
-                                      const SizedBox(width: 6),
-                                      Text(_error, style: TextStyle(fontSize: 12, color: AppTheme.danger)),
-                                    ],
-                                  ),
-                                )
-                              : const SizedBox.shrink(),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-                    
-                    // — Unlock button (neumorphic) —
-                    GestureDetector(
-                      onTap: _loading ? null : _submitPassword,
-                      child: Container(
-                        width: double.infinity,
-                        height: 56,
-                        decoration: AppTheme.softButton(radius: 18),
-                        alignment: Alignment.center,
-                        child: _loading
-                          ? SizedBox(width: 22, height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2, color: AppTheme.background))
-                          : Text('Unlock', style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w700,
-                              color: AppTheme.background, letterSpacing: 0.3)),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    
-                    // — Biometric option —
-                    GestureDetector(
-                      onTap: _tryBiometric,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: AppTheme.surface,
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow: AppTheme.softShadowsLight,
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.fingerprint_rounded, size: 20, color: AppTheme.accent),
-                            const SizedBox(width: 10),
-                            Text('Use biometrics', style: TextStyle(
-                              fontSize: 13, fontWeight: FontWeight.w500, color: AppTheme.accent)),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+        child: FadeTransition(
+          opacity: CurvedAnimation(parent: _entranceController, curve: Curves.easeOut),
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.03), end: Offset.zero,
+            ).animate(CurvedAnimation(parent: _entranceController, curve: Curves.easeOutCubic)),
+            child: Column(
+              children: [
+                const Spacer(flex: 2),
+                
+                // — Lock icon —
+                Container(
+                  width: 72, height: 72,
+                  decoration: AppTheme.softCircle(),
+                  child: const Icon(Icons.lock_outline_rounded, size: 28, color: AppTheme.accent),
                 ),
-              ),
+                const SizedBox(height: 28),
+                
+                // — Title —
+                const Text('Enter PIN',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700,
+                    color: AppTheme.textPrimary, letterSpacing: -0.3)),
+                const SizedBox(height: 8),
+                Text(_error.isNotEmpty ? _error : 'Enter your 6-digit PIN',
+                  style: TextStyle(fontSize: 13, 
+                    color: _error.isNotEmpty ? AppTheme.danger : AppTheme.textMuted)),
+                const SizedBox(height: 32),
+                
+                // — PIN dots —
+                AnimatedBuilder(
+                  animation: _shakeController,
+                  builder: (context, child) {
+                    final t = _shakeController.value;
+                    final dx = t < 0.25 ? 12.0 * (t * 4)
+                        : t < 0.75 ? 12.0 * (1 - (t - 0.25) * 4)
+                        : 12.0 * ((t - 0.75) * 4 - 1);
+                    return Transform.translate(offset: Offset(dx, 0), child: child);
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(_pinLength, (i) {
+                      final filled = i < _pin.length;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeOut,
+                        width: filled ? 14 : 12,
+                        height: filled ? 14 : 12,
+                        margin: const EdgeInsets.symmetric(horizontal: 10),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _error.isNotEmpty 
+                              ? AppTheme.danger.withValues(alpha: 0.7) 
+                              : filled 
+                                  ? AppTheme.accent 
+                                  : Colors.transparent,
+                          border: Border.all(
+                            color: _error.isNotEmpty
+                                ? AppTheme.danger.withValues(alpha: 0.5)
+                                : filled 
+                                    ? AppTheme.accent 
+                                    : AppTheme.textMuted.withValues(alpha: 0.4),
+                            width: 1.5,
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+                
+                const Spacer(flex: 1),
+                
+                // — Number pad —
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 48),
+                  child: Column(
+                    children: [
+                      _buildPadRow(['1', '2', '3']),
+                      const SizedBox(height: 16),
+                      _buildPadRow(['4', '5', '6']),
+                      const SizedBox(height: 16),
+                      _buildPadRow(['7', '8', '9']),
+                      const SizedBox(height: 16),
+                      _buildPadRow(['bio', '0', 'del']),
+                    ],
+                  ),
+                ),
+                
+                const Spacer(flex: 2),
+              ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildPadRow(List<String> keys) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: keys.map((key) => _buildPadKey(key)).toList(),
+    );
+  }
+
+  Widget _buildPadKey(String key) {
+    final isDigit = key.length == 1 && int.tryParse(key) != null;
+    final isBio = key == 'bio';
+    final isDel = key == 'del';
+
+    return GestureDetector(
+      onTap: () {
+        if (isDigit) {
+          _addDigit(key);
+        } else if (isDel) {
+          _removeDigit();
+        } else if (isBio) {
+          _tryBiometric();
+        }
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        width: 72,
+        height: 72,
+        decoration: BoxDecoration(
+          color: isDigit ? AppTheme.surface : Colors.transparent,
+          shape: BoxShape.circle,
+          boxShadow: isDigit ? AppTheme.softShadowsLight : [],
+          border: Border.all(
+            color: isDigit 
+                ? Colors.white.withValues(alpha: 0.04) 
+                : Colors.transparent,
+            width: 0.5,
+          ),
+        ),
+        alignment: Alignment.center,
+        child: isBio
+            ? Icon(Icons.fingerprint_rounded, size: 26, color: AppTheme.textMuted)
+            : isDel
+                ? Icon(Icons.backspace_outlined, size: 22, color: AppTheme.textMuted)
+                : Text(key, style: const TextStyle(
+                    fontSize: 26, fontWeight: FontWeight.w500, 
+                    color: AppTheme.textPrimary)),
       ),
     );
   }

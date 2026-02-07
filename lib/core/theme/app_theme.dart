@@ -4,72 +4,71 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // ═══════════════════════════════════════════
-  //  SOFT DARK PALETTE — True Neumorphism
+  //  CLEAN MONOCHROME — True Soft UI
   // ═══════════════════════════════════════════
   static const Color background   = Color(0xFF0D0D0D);
-  static const Color surface      = Color(0xFF151515);
-  static const Color surfaceHigh  = Color(0xFF1A1A1A);
-  static const Color surfaceLight = Color(0xFF222222);
-  static const Color surfaceBright = Color(0xFF2A2A2A);
+  static const Color surface      = Color(0xFF161616);
+  static const Color surfaceHigh  = Color(0xFF1C1C1C);
+  static const Color surfaceLight = Color(0xFF242424);
+  static const Color surfaceBright = Color(0xFF2E2E2E);
   
-  static const Color textPrimary   = Color(0xFFEAEAEA);
-  static const Color textSecondary = Color(0xFF9E9E9E);
-  static const Color textMuted     = Color(0xFF5E5E5E);
-  static const Color textSubtle    = Color(0xFF363636);
+  static const Color textPrimary   = Color(0xFFF0F0F0);
+  static const Color textSecondary = Color(0xFFA0A0A0);
+  static const Color textMuted     = Color(0xFF606060);
+  static const Color textSubtle    = Color(0xFF3A3A3A);
   
-  // Single clean accent — soft warm tone
-  static const Color accent       = Color(0xFFC9A87C);
-  static const Color accentDim    = Color(0xFF7A6B52);
+  // Clean white accent — monochrome
+  static const Color accent       = Color(0xFFE8E8E8);
+  static const Color accentDim    = Color(0xFF8A8A8A);
   
-  // Status (muted, sophisticated)
+  // Status (desaturated, sophisticated)
   static const Color success = Color(0xFF6BAF7D);
   static const Color warning = Color(0xFFD4A54B);
-  static const Color danger  = Color(0xFFB85C5C);
+  static const Color danger  = Color(0xFFBF6060);
   
   // ═══════════════════════════════════════════
   //  DUAL-SHADOW NEUMORPHISM
   // ═══════════════════════════════════════════
-  // Light bloom (top-left) + Dark floor (bottom-right)
   
   static List<BoxShadow> get softShadows => [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.5),
-      offset: const Offset(6, 6),
-      blurRadius: 14,
+      color: Colors.black.withValues(alpha: 0.45),
+      offset: const Offset(5, 5),
+      blurRadius: 12,
     ),
     BoxShadow(
-      color: Colors.white.withValues(alpha: 0.02),
-      offset: const Offset(-4, -4),
-      blurRadius: 10,
-    ),
-  ];
-  
-  static List<BoxShadow> get softShadowsLight => [
-    BoxShadow(
-      color: Colors.black.withValues(alpha: 0.35),
-      offset: const Offset(4, 4),
-      blurRadius: 10,
-    ),
-    BoxShadow(
-      color: Colors.white.withValues(alpha: 0.018),
+      color: Colors.white.withValues(alpha: 0.025),
       offset: const Offset(-3, -3),
       blurRadius: 8,
     ),
   ];
   
+  static List<BoxShadow> get softShadowsLight => [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.3),
+      offset: const Offset(3, 3),
+      blurRadius: 8,
+    ),
+    BoxShadow(
+      color: Colors.white.withValues(alpha: 0.02),
+      offset: const Offset(-2, -2),
+      blurRadius: 6,
+    ),
+  ];
+  
   // ═══════════════════════════════════════════
-  //  CATEGORY COLORS — Clean, harmonious
+  //  CATEGORY COLORS — Muted, sophisticated
   // ═══════════════════════════════════════════
   static const Map<String, Color> categoryColors = {
-    'streaming':    Color(0xFF5B8EC7),   // steel blue
-    'music':        Color(0xFF8B7DBC),   // soft violet
-    'cloud':        Color(0xFF5BAAB5),   // teal
-    'gaming':       Color(0xFFC77D5B),   // warm clay
-    'fitness':      Color(0xFF5BB588),   // sage green
-    'news':         Color(0xFFB5A05B),   // muted gold
-    'productivity': Color(0xFF7198B5),   // slate blue
-    'education':    Color(0xFF8B8BC7),   // periwinkle
-    'other':        Color(0xFF777777),   // neutral
+    'streaming':    Color(0xFF6A9EC9),   // steel blue
+    'music':        Color(0xFF9489C4),   // soft violet
+    'cloud':        Color(0xFF5FB5B5),   // teal
+    'gaming':       Color(0xFFC98A6A),   // warm clay
+    'fitness':      Color(0xFF6ABF8A),   // sage
+    'news':         Color(0xFFB5A570),   // muted sand
+    'productivity': Color(0xFF7BA4C0),   // slate
+    'education':    Color(0xFF9494C9),   // periwinkle
+    'other':        Color(0xFF808080),   // neutral
   };
   
   static Color getCategoryColor(String category) => 
@@ -79,7 +78,7 @@ class AppTheme {
   //  DECORATION HELPERS
   // ═══════════════════════════════════════════
   
-  /// Raised neumorphic card — the workhorse
+  /// Raised neumorphic card
   static BoxDecoration softCard({double radius = 24}) => BoxDecoration(
     color: surface,
     borderRadius: BorderRadius.circular(radius),
@@ -87,7 +86,7 @@ class AppTheme {
     boxShadow: softShadows,
   );
   
-  /// Elevated card with brighter surface
+  /// Elevated card
   static BoxDecoration softCardElevated({double radius = 24}) => BoxDecoration(
     color: surfaceHigh,
     borderRadius: BorderRadius.circular(radius),
@@ -95,13 +94,12 @@ class AppTheme {
     boxShadow: softShadows,
   );
   
-  /// Recessed / inset field — looks pressed into the surface
+  /// Recessed / inset field
   static BoxDecoration softInset({double radius = 18}) => BoxDecoration(
     color: const Color(0xFF0A0A0A),
     borderRadius: BorderRadius.circular(radius),
     border: Border.all(color: Colors.black.withValues(alpha: 0.5), width: 0.5),
     boxShadow: [
-      // Inner-shadow simulation via a subtle top rim
       BoxShadow(
         color: Colors.black.withValues(alpha: 0.3),
         offset: const Offset(0, 2),
@@ -110,24 +108,24 @@ class AppTheme {
     ],
   );
   
-  /// Prominent neumorphic button
-  static BoxDecoration softButton({double radius = 18, Color? color}) => BoxDecoration(
+  /// Prominent button — rounded, monochrome white
+  static BoxDecoration softButton({double radius = 22, Color? color}) => BoxDecoration(
     color: color ?? accent,
     borderRadius: BorderRadius.circular(radius),
     border: Border(
-      top: BorderSide(color: Colors.white.withValues(alpha: 0.1), width: 0.5),
-      left: BorderSide(color: Colors.white.withValues(alpha: 0.06), width: 0.5),
-      right: BorderSide(color: Colors.black.withValues(alpha: 0.15), width: 0.5),
-      bottom: BorderSide(color: Colors.black.withValues(alpha: 0.2), width: 0.5),
+      top: BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 0.5),
+      left: BorderSide(color: Colors.white.withValues(alpha: 0.08), width: 0.5),
+      right: BorderSide(color: Colors.black.withValues(alpha: 0.12), width: 0.5),
+      bottom: BorderSide(color: Colors.black.withValues(alpha: 0.18), width: 0.5),
     ),
     boxShadow: [
-      BoxShadow(color: (color ?? accent).withValues(alpha: 0.2), offset: const Offset(0, 4), blurRadius: 16),
-      BoxShadow(color: Colors.black.withValues(alpha: 0.4), offset: const Offset(0, 2), blurRadius: 6),
+      BoxShadow(color: (color ?? accent).withValues(alpha: 0.08), offset: const Offset(0, 4), blurRadius: 16),
+      BoxShadow(color: Colors.black.withValues(alpha: 0.35), offset: const Offset(0, 2), blurRadius: 6),
     ],
   );
   
-  /// Pressed / active button state
-  static BoxDecoration softButtonPressed({double radius = 18, Color? color}) => BoxDecoration(
+  /// Pressed button state
+  static BoxDecoration softButtonPressed({double radius = 22, Color? color}) => BoxDecoration(
     color: (color ?? accent).withValues(alpha: 0.85),
     borderRadius: BorderRadius.circular(radius),
     boxShadow: [
@@ -135,15 +133,19 @@ class AppTheme {
     ],
   );
 
-  /// Accent-glow card for hero elements
-  static BoxDecoration accentGlow({double radius = 24}) => BoxDecoration(
-    color: surface,
+  /// Subtle outline button
+  static BoxDecoration outlineButton({double radius = 22}) => BoxDecoration(
+    color: Colors.transparent,
     borderRadius: BorderRadius.circular(radius),
-    border: Border.all(color: accent.withValues(alpha: 0.1), width: 0.5),
-    boxShadow: [
-      BoxShadow(color: accent.withValues(alpha: 0.06), blurRadius: 20, spreadRadius: -4),
-      ...softShadowsLight,
-    ],
+    border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
+  );
+
+  /// Neumorphic circle
+  static BoxDecoration softCircle({double size = 60, Color? color}) => BoxDecoration(
+    color: color ?? surface,
+    shape: BoxShape.circle,
+    boxShadow: softShadowsLight,
+    border: Border.all(color: Colors.white.withValues(alpha: 0.04), width: 0.5),
   );
   
   // ═══════════════════════════════════════════
@@ -195,7 +197,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-          borderSide: BorderSide(color: accent.withValues(alpha: 0.35), width: 1.5),
+          borderSide: BorderSide(color: accent.withValues(alpha: 0.2), width: 1.5),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
         hintStyle: const TextStyle(color: textMuted, fontWeight: FontWeight.w400),
@@ -205,7 +207,7 @@ class AppTheme {
           states.contains(WidgetState.selected) ? accent : textMuted),
         trackColor: WidgetStateProperty.resolveWith((states) =>
           states.contains(WidgetState.selected)
-              ? accent.withValues(alpha: 0.25) : surfaceLight),
+              ? accent.withValues(alpha: 0.15) : surfaceLight),
         trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
       ),
     );

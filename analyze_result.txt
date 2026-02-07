@@ -1,2 +1,14 @@
 ﻿Analyzing subscription_tracker...                               
-No issues found! (ran in 3.6s)
+
+warning - The value of the field '_loading' isn't used - lib\screens\auth\lock_screen.dart:17:8 - unused_field
+
+flutter.bat : 1 issue found. (ran in 57.7s)
+In Zeile:1 Zeichen:1
++ & "C:\Users\User\.gemini\antigravity\scratch\flutter\bin\flutter.
+bat" ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~
+    + CategoryInfo          : NotSpecified: (1 issue found. (ran i 
+   n 57.7s):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

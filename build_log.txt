@@ -1,0 +1,39 @@
+﻿
+Running Gradle task 'assembleRelease'...                        
+flutter.bat : Your project is configured with 
+Android NDK 26.1.10909125, but the following 
+plugin(s) depend on a different Android NDK version:
+In Zeile:1 Zeichen:1
++ & "C:\Users\User\.gemini\antigravity\scratch\flutt
+er\bin\flutter.bat" ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Your 
+pro    ject is...id NDK version::String) [], 
+RemoteExcep    tion
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+- flutter_local_notifications requires Android NDK 
+27.0.12077973
+- flutter_plugin_android_lifecycle requires Android 
+NDK 27.0.12077973
+- local_auth_android requires Android NDK 
+27.0.12077973
+- path_provider_android requires Android NDK 
+27.0.12077973
+- shared_preferences_android requires Android NDK 
+27.0.12077973
+Fix this issue by using the highest Android NDK 
+version (they are backward compatible).
+Add the following to C:\Users\User\.gemini\antigravi
+ty\scratch\subscription_tracker\android\app\build.gr
+adle:
+
+    android {
+        ndkVersion = "27.0.12077973"
+        ...
+    }
+
+Font asset "MaterialIcons-Regular.otf" was tree-shaken, reducing it from 1645184 to 14592 bytes (99.1% reduction). Tree-shaking can be disabled by providing the --no-tree-shake-icons flag when building your app.
+Running Gradle task 'assembleRelease'...                           63,3s
+ÔêÜ Built build\app\outputs\flutter-apk\app-release.apk (21.7MB)
