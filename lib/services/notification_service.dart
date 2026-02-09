@@ -30,7 +30,7 @@ class NotificationService {
     try {
       await _exactAlarmChannel.invokeMethod('requestExactAlarmPermission');
     } on PlatformException {
-      // Ignore – settings screen could not be opened
+      // Ignore - settings screen could not be opened
     }
   }
 

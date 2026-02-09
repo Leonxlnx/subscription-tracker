@@ -12,12 +12,12 @@ import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
 
-    private val CHANNEL = "com.vibecoding.subscription_tracker/exact_alarm"
+    private val EXACT_ALARM_CHANNEL = "com.vibecoding.subscription_tracker/exact_alarm"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, EXACT_ALARM_CHANNEL)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "canScheduleExactAlarms" -> {
