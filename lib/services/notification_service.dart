@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tzdata;
@@ -11,6 +12,27 @@ class NotificationService {
 
   final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
+
+  static const _exactAlarmChannel = MethodChannel('com.vibecoding.subscription_tracker/exact_alarm');
+
+  /// Check if the app can schedule exact alarms (API 31+).
+  Future<bool> canScheduleExactAlarms() async {
+    try {
+      final result = await _exactAlarmChannel.invokeMethod<bool>('canScheduleExactAlarms');
+      return result ?? false;
+    } on PlatformException {
+      return false;
+    }
+  }
+
+  /// Open system settings so the user can grant the exact alarm permission.
+  Future<void> requestExactAlarmPermission() async {
+    try {
+      await _exactAlarmChannel.invokeMethod('requestExactAlarmPermission');
+    } on PlatformException {
+      // Ignore - settings screen could not be opened
+    }
+  }
 
   Future<void> initialize() async {
     if (_initialized) return;
@@ -83,7 +105,7 @@ class NotificationService {
           styleInformation: const BigTextStyleInformation(''),
         ),
       ),
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
